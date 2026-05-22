@@ -216,12 +216,16 @@ function renderSide(){
   } else {
     if(!users.length){ el.innerHTML='<div style="padding:12px;color:#6b6b8a;font-size:12px">Koi user nahi<br>Dusra account banao</div>'; return }
     el.innerHTML=users.map(u=>`
-      <div class="item" onclick="openDM('${u.id}')">
+      <div class="item" onclick="openDMbyIndex(${i})">
         ${avEl(u.name||u.email)} <span>${u.name||u.email}</span>
       </div>`).join('')
   }
 }
 
+async function openDMbyIndex(i){
+  const u = users[i]
+  if(u) openDM(u.id)
+  } 
 async function openDM(uid){
   const other=users.find(u=>u.id===uid)
   if(!other) return
