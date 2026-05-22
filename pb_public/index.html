@@ -6,319 +6,379 @@
 <title>Muze Chat</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:sans-serif;background:#0a0a0f;color:white;height:100vh;display:flex;align-items:center;justify-content:center}
-.box{background:#12121a;border:1px solid #2a2a3d;border-radius:16px;padding:40px;width:340px}
-h1{color:#6c47ff;margin-bottom:8px;font-size:28px}
-p{color:#6b6b8a;margin-bottom:24px}
-input{width:100%;padding:12px;border-radius:8px;border:1px solid #2a2a3d;background:#1a1a26;color:white;font-size:14px;margin-bottom:12px;box-sizing:border-box}
-button{width:100%;padding:12px;background:#6c47ff;color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;font-weight:bold}
-.err{color:#ff4791;font-size:13px;margin-bottom:12px}
-.link{color:#6c47ff;cursor:pointer;background:none;border:none;font-size:14px;text-decoration:underline}
-#app{width:100%;max-width:340px}
-#chat{display:none;flex-direction:column;height:100vh;width:100%}
-.chat-top{background:#12121a;border-bottom:1px solid #2a2a3d;padding:12px 16px;display:flex;align-items:center;gap:10px}
-.msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;background:#0a0a0f}
-.bubble{max-width:75%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.5}
+body{font-family:sans-serif;background:#0a0a0f;color:white;height:100vh;overflow:hidden}
+.box{background:#12121a;border:1px solid #2a2a3d;border-radius:16px;padding:40px;width:320px}
+.center{min-height:100vh;display:flex;align-items:center;justify-content:center}
+input{width:100%;padding:12px;border-radius:8px;border:1px solid #2a2a3d;background:#1a1a26;color:white;font-size:14px;margin-bottom:12px;box-sizing:border-box;outline:none}
+button.primary{width:100%;padding:12px;background:#6c47ff;color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;font-weight:bold}
+.err{color:#ff4791;font-size:13px;margin-bottom:12px;display:none}
+h1{color:#6c47ff;margin-bottom:8px;font-size:26px}
+p{color:#6b6b8a;margin-bottom:20px;font-size:14px}
+
+/* MAIN LAYOUT */
+#app{display:none;height:100vh;flex-direction:row}
+.sidebar{width:200px;min-width:200px;background:#12121a;border-right:1px solid #2a2a3d;display:flex;flex-direction:column;height:100vh}
+.sid-top{padding:14px;border-bottom:1px solid #2a2a3d}
+.sid-top .logo{color:#6c47ff;font-size:18px;font-weight:bold}
+.sid-top .uname{color:#6b6b8a;font-size:11px;margin-top:2px}
+.tabs{display:flex;border-bottom:1px solid #2a2a3d}
+.tab{flex:1;padding:9px;background:transparent;border:none;color:#6b6b8a;cursor:pointer;font-size:12px;border-bottom:2px solid transparent}
+.tab.on{color:#6c47ff;border-bottom-color:#6c47ff;background:rgba(108,71,255,0.1)}
+.list{flex:1;overflow-y:auto;padding:6px}
+.item{padding:9px 10px;border-radius:8px;cursor:pointer;margin-bottom:3px;display:flex;align-items:center;gap:8px;font-size:13px}
+.item:hover{background:#1a1a26}
+.item.on{background:rgba(108,71,255,0.2)}
+.av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;flex-shrink:0}
+.logout-btn{margin:10px;padding:8px;background:transparent;border:1px solid #2a2a3d;border-radius:8px;color:#6b6b8a;cursor:pointer;font-size:12px}
+
+/* CHAT */
+.chat-area{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.empty{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;opacity:0.3}
+.chat-top{padding:12px 16px;border-bottom:1px solid #2a2a3d;background:#12121a;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.back{background:none;border:none;color:#6c47ff;font-size:20px;cursor:pointer}
+.msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.bubble{max-width:78%;padding:10px 13px;border-radius:14px;font-size:14px;line-height:1.5;word-break:break-word}
 .mine{align-self:flex-end;background:#1e1640;border:1px solid rgba(108,71,255,0.3)}
 .theirs{align-self:flex-start;background:#12121a;border:1px solid #2a2a3d}
-.sender{font-size:11px;color:#6c47ff;margin-bottom:4px}
-.fwd{font-size:10px;color:#6b6b8a;margin-bottom:4px}
+.sndr{font-size:11px;color:#6c47ff;margin-bottom:3px}
+.fwd-tag{font-size:10px;color:#6b6b8a;margin-bottom:3px}
 .time{font-size:10px;color:#6b6b8a;margin-top:4px}
-.input-row{padding:12px;border-top:1px solid #2a2a3d;background:#12121a;display:flex;gap:8px;align-items:center}
-.input-row input{margin:0}
-.send{width:auto;padding:10px 18px}
-.attach{width:auto;padding:10px 14px;background:#1a1a26;border:1px solid #2a2a3d;font-size:18px}
-.av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;flex-shrink:0}
-.sidebar{width:250px;background:#12121a;border-right:1px solid #2a2a3d;display:flex;flex-direction:column;height:100vh}
-.main-wrap{display:none;width:100vw;height:100vh;flex-direction:row}
-.tabs{display:flex;border-bottom:1px solid #2a2a3d}
-.tab{flex:1;padding:10px;background:transparent;border:none;color:#6b6b8a;cursor:pointer;font-size:13px;border-bottom:2px solid transparent}
-.tab.active{color:#6c47ff;border-bottom:2px solid #6c47ff;background:rgba(108,71,255,0.1)}
-.list{flex:1;overflow-y:auto;padding:8px}
-.item{padding:10px 12px;border-radius:10px;cursor:pointer;margin-bottom:4px;display:flex;align-items:center;gap:10px;border:1px solid transparent}
-.item:hover{background:#1a1a26}
-.item.active{background:rgba(108,71,255,0.2);border-color:rgba(108,71,255,0.3)}
-.mbtn{padding:4px 8px;background:transparent;border:1px solid #2a2a3d;border-radius:6px;color:#6b6b8a;cursor:pointer;font-size:11px;margin-top:6px;margin-right:4px}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:100}
-.fwd-box{background:#12121a;border:1px solid #2a2a3d;border-radius:16px;padding:24px;width:300px;max-height:70vh;overflow-y:auto}
-video,img{width:100%;border-radius:8px;margin-top:6px;max-height:220px;object-fit:cover}
+.media-btns{margin-top:6px;display:flex;gap:6px}
+.mbtn{padding:4px 8px;background:transparent;border:1px solid #2a2a3d;border-radius:6px;color:#6b6b8a;cursor:pointer;font-size:11px}
+video,img.msg-img{width:100%;border-radius:8px;margin-top:6px;max-height:200px;object-fit:cover;display:block}
+
+/* INPUT */
+.input-bar{padding:10px 12px;border-top:1px solid #2a2a3d;background:#12121a;display:flex;gap:8px;align-items:center;flex-shrink:0}
+.input-bar input{margin:0;flex:1}
+.attach-btn{padding:10px 12px;background:#1a1a26;border:1px solid #2a2a3d;border-radius:8px;color:white;font-size:16px;cursor:pointer}
+.send-btn{padding:10px 16px;background:#6c47ff;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-weight:bold;white-space:nowrap}
+.file-prev{padding:4px 12px;font-size:12px;color:#6c47ff;display:none}
+
+/* FORWARD */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:99;display:none}
+.fwd-box{background:#12121a;border:1px solid #2a2a3d;border-radius:14px;padding:20px;width:280px;max-height:65vh;overflow-y:auto}
+.fwd-title{font-weight:bold;font-size:15px;margin-bottom:4px}
+.fwd-sub{font-size:12px;color:#6b6b8a;margin-bottom:14px}
+.cancel-btn{width:100%;padding:9px;margin-top:10px;background:transparent;border:1px solid #2a2a3d;border-radius:8px;color:#6b6b8a;cursor:pointer}
 </style>
 </head>
 <body>
 
 <!-- SETUP -->
-<div id="setup" class="box">
-  <h1>🔐 Muze</h1>
-  <p>Apna PocketBase URL dalo</p>
-  <input id="pbUrl" placeholder="https://app1-production-03c2.up.railway.app"/>
-  <button onclick="connect()">Connect</button>
+<div id="pg-setup" class="center">
+  <div class="box">
+    <h1>🔐 Muze</h1>
+    <p>Apna server URL dalo</p>
+    <input id="url-in" placeholder="https://app1-production-03c2.up.railway.app"/>
+    <button class="primary" onclick="doConnect()">Connect</button>
+  </div>
 </div>
 
 <!-- AUTH -->
-<div id="auth" style="display:none" class="box">
-  <h1>💬 Muze</h1>
-  <p id="authTitle">Login karo</p>
-  <input id="nameIn" placeholder="Naam" style="display:none"/>
-  <input id="emailIn" placeholder="Email"/>
-  <input id="passIn" placeholder="Password" type="password"/>
-  <div id="authErr" class="err" style="display:none"></div>
-  <button onclick="authSubmit()">Login</button>
-  <div style="text-align:center;margin-top:16px;color:#6b6b8a;font-size:14px">
-    <span id="switchText">Account nahi?</span>
-    <button class="link" onclick="switchMode()">Register</button>
+<div id="pg-auth" class="center" style="display:none">
+  <div class="box">
+    <h1>💬 Muze</h1>
+    <p id="auth-title">Login karo</p>
+    <input id="name-in" placeholder="Naam" style="display:none"/>
+    <input id="email-in" placeholder="Email"/>
+    <input id="pass-in" placeholder="Password" type="password"/>
+    <div class="err" id="auth-err"></div>
+    <button class="primary" onclick="doAuth()">Login</button>
+    <div style="text-align:center;margin-top:14px;color:#6b6b8a;font-size:13px">
+      <span id="switch-txt">Account nahi?</span>
+      <button onclick="toggleMode()" style="color:#6c47ff;background:none;border:none;cursor:pointer;font-size:13px;text-decoration:underline">Register</button>
+    </div>
   </div>
 </div>
 
 <!-- MAIN APP -->
-<div id="mainWrap" class="main-wrap">
+<div id="app" style="display:none">
   <div class="sidebar">
-    <div style="padding:16px;border-bottom:1px solid #2a2a3d">
-      <div style="color:#6c47ff;font-size:22px;font-weight:bold">💬 Muze</div>
-      <div style="color:#6b6b8a;font-size:12px" id="myName"></div>
+    <div class="sid-top">
+      <div class="logo">💬 Muze</div>
+      <div class="uname" id="my-name"></div>
     </div>
     <div class="tabs">
-      <button class="tab active" onclick="showTab('chats')" id="tabChats">Chats</button>
-      <button class="tab" onclick="showTab('users')" id="tabUsers">Users</button>
+      <button class="tab on" id="tab-chats" onclick="showTab('chats')">Chats</button>
+      <button class="tab" id="tab-users" onclick="showTab('users')">Users</button>
     </div>
-    <div class="list" id="sideList"></div>
-    <button onclick="logout()" style="margin:12px;padding:10px;background:transparent;border:1px solid #2a2a3d;border-radius:8px;color:#6b6b8a;cursor:pointer">Logout</button>
+    <div class="list" id="side-list"></div>
+    <button class="logout-btn" onclick="doLogout()">Logout</button>
   </div>
-
-  <div id="chatWrap" style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;opacity:0.4">
-    <div style="font-size:64px">💬</div>
-    <div style="font-size:18px;font-weight:bold">Koi chat chuno</div>
+  <div class="chat-area" id="chat-area">
+    <div class="empty">
+      <div style="font-size:48px">💬</div>
+      <div style="font-size:15px;font-weight:bold">Koi chat chuno</div>
+      <div style="font-size:12px;color:#6b6b8a">Users tab → kisi ko message karo</div>
+    </div>
   </div>
 </div>
 
 <!-- FORWARD OVERLAY -->
-<div id="fwdOverlay" class="overlay" style="display:none" onclick="closeFwd()">
+<div class="overlay" id="fwd-overlay" onclick="closeFwd()">
   <div class="fwd-box" onclick="event.stopPropagation()">
-    <div style="font-weight:bold;font-size:16px;margin-bottom:4px">↪️ Kisko forward karein?</div>
-    <div style="font-size:12px;color:#6b6b8a;margin-bottom:16px">DB se DB directly</div>
-    <div id="fwdList"></div>
-    <button onclick="closeFwd()" style="width:100%;padding:10px;margin-top:8px;background:transparent;border:1px solid #2a2a3d;border-radius:8px;color:#6b6b8a;cursor:pointer">Cancel</button>
+    <div class="fwd-title">↪️ Forward karo</div>
+    <div class="fwd-sub">DB se DB directly jayega</div>
+    <div id="fwd-list"></div>
+    <button class="cancel-btn" onclick="closeFwd()">Cancel</button>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.0/dist/pocketbase.umd.js"></script>
 <script>
-let pb, currentUser, currentRoom, allUsers=[], allRooms=[], currentTab='chats', forwardMsg=null
+let pb, me, curRoom, users=[], rooms=[], curTab='chats', fwdMsg=null, allMsgs=[]
 
-function connect(){
-  const url=document.getElementById('pbUrl').value.trim()
+const colors=['#6c47ff','#ff4791','#06b6d4','#22c55e','#f59e0b']
+const col = n => colors[(n||'A').charCodeAt(0)%5]
+const avEl = (n,sz=32) => `<div class="av" style="width:${sz}px;height:${sz}px;background:${col(n)}">${(n||'?')[0].toUpperCase()}</div>`
+
+function show(id){ ['pg-setup','pg-auth','app'].forEach(x=>document.getElementById(x).style.display='none'); document.getElementById(id).style.display=id==='app'?'flex':'flex' }
+
+function doConnect(){
+  const url = document.getElementById('url-in').value.trim()
   if(!url) return
-  localStorage.setItem('pb_url',url)
+  localStorage.setItem('pb_url', url)
   initPB(url)
 }
 
 function initPB(url){
-  pb=new PocketBase(url)
-  document.getElementById('setup').style.display='none'
-  if(pb.authStore.isValid){
-    currentUser=pb.authStore.model
-    showMain()
-  } else {
-    document.getElementById('auth').style.display='flex'
-    document.getElementById('auth').style.flexDirection='column'
-  }
+  pb = new PocketBase(url)
+  if(pb.authStore.isValid){ me=pb.authStore.model; show('app'); loadAll() }
+  else show('pg-auth')
 }
 
-let authMode='login'
-function switchMode(){
-  authMode=authMode==='login'?'register':'login'
-  document.getElementById('authTitle').textContent=authMode==='login'?'Login karo':'Account banao'
-  document.getElementById('nameIn').style.display=authMode==='register'?'block':'none'
-  document.getElementById('switchText').textContent=authMode==='login'?'Account nahi?':'Already hai?'
+let mode='login'
+function toggleMode(){
+  mode = mode==='login'?'register':'login'
+  document.getElementById('auth-title').textContent = mode==='login'?'Login karo':'Account banao'
+  document.getElementById('name-in').style.display = mode==='register'?'block':'none'
+  document.getElementById('switch-txt').textContent = mode==='login'?'Account nahi?':'Already hai?'
+  document.querySelector('#pg-auth .primary').textContent = mode==='login'?'Login':'Register'
 }
 
-async function authSubmit(){
-  const email=document.getElementById('emailIn').value
-  const pass=document.getElementById('passIn').value
-  const name=document.getElementById('nameIn').value
-  const err=document.getElementById('authErr')
-  err.style.display='none'
+async function doAuth(){
+  const email=document.getElementById('email-in').value
+  const pass=document.getElementById('pass-in').value
+  const name=document.getElementById('name-in').value
+  const errEl=document.getElementById('auth-err')
+  errEl.style.display='none'
   try{
-    if(authMode==='register') await pb.collection('users').create({name,email,password:pass,passwordConfirm:pass})
-    const auth=await pb.collection('users').authWithPassword(email,pass)
-    currentUser=auth.record
-    document.getElementById('auth').style.display='none'
-    showMain()
-  }catch(e){ err.textContent='⚠️ '+(e.message||'Error'); err.style.display='block' }
+    if(mode==='register') await pb.collection('users').create({name,email,password:pass,passwordConfirm:pass})
+    const r = await pb.collection('users').authWithPassword(email,pass)
+    me=r.record
+    show('app')
+    loadAll()
+  }catch(e){ errEl.textContent='⚠️ '+(e.message||'Error'); errEl.style.display='block' }
 }
 
-function logout(){ pb.authStore.clear(); location.reload() }
+function doLogout(){ pb.authStore.clear(); location.reload() }
 
-async function showMain(){
-  document.getElementById('mainWrap').style.display='flex'
-  document.getElementById('myName').textContent='👤 '+currentUser.name
+async function loadAll(){
+  document.getElementById('my-name').textContent='👤 '+(me.name||me.email)
   await loadUsers()
   await loadRooms()
   renderSide()
 }
 
 async function loadUsers(){
-  try{ allUsers=(await pb.collection('users').getFullList()).filter(u=>u.id!==currentUser.id) }catch(e){}
+  try{
+    const all = await pb.collection('users').getFullList({sort:'name'})
+    users = all.filter(u=>u.id!==me.id)
+    console.log('Users loaded:', users.length)
+  }catch(e){ console.log('loadUsers error:',e) }
 }
 
 async function loadRooms(){
-  try{ allRooms=await pb.collection('rooms').getFullList({filter:`members ~ "${currentUser.id}"`,sort:'-updated'}) }catch(e){}
+  try{
+    rooms = await pb.collection('rooms').getFullList({sort:'-updated'})
+    rooms = rooms.filter(r => {
+      const m = r.members||[]
+      return Array.isArray(m) ? m.includes(me.id) : JSON.stringify(m).includes(me.id)
+    })
+  }catch(e){ console.log('loadRooms error:',e) }
 }
 
-const colors=['#6c47ff','#ff4791','#06b6d4','#22c55e','#f59e0b']
-function color(name){ return colors[(name||'A').charCodeAt(0)%5] }
-function av(name,size=36){ return `<div class="av" style="width:${size}px;height:${size}px;background:${color(name)}">${(name||'?')[0].toUpperCase()}</div>` }
-
-function showTab(tab){
-  currentTab=tab
-  document.getElementById('tabChats').className='tab'+(tab==='chats'?' active':'')
-  document.getElementById('tabUsers').className='tab'+(tab==='users'?' active':'')
+function showTab(t){
+  curTab=t
+  document.getElementById('tab-chats').className='tab'+(t==='chats'?' on':'')
+  document.getElementById('tab-users').className='tab'+(t==='users'?' on':'')
   renderSide()
 }
 
 function renderSide(){
-  const list=document.getElementById('sideList')
-  if(currentTab==='chats'){
-    list.innerHTML=allRooms.map(r=>`
-      <div class="item ${currentRoom?.id===r.id?'active':''}" onclick="openRoom('${r.id}')">
-        ${av(r.name)} <div><div style="font-size:14px">${r.name}</div><div style="font-size:11px;color:#6b6b8a">Tap to open</div></div>
+  const el=document.getElementById('side-list')
+  if(curTab==='chats'){
+    if(!rooms.length){ el.innerHTML='<div style="padding:12px;color:#6b6b8a;font-size:12px">Koi chat nahi<br>Users tab mein jao</div>'; return }
+    el.innerHTML=rooms.map(r=>`
+      <div class="item ${curRoom?.id===r.id?'on':''}" onclick="openRoom('${r.id}')">
+        ${avEl(r.name)} <span>${r.name||'Chat'}</span>
       </div>`).join('')
   } else {
-    list.innerHTML=allUsers.map(u=>`
+    if(!users.length){ el.innerHTML='<div style="padding:12px;color:#6b6b8a;font-size:12px">Koi user nahi<br>Dusra account banao</div>'; return }
+    el.innerHTML=users.map(u=>`
       <div class="item" onclick="openDM('${u.id}')">
-        ${av(u.name)} <div><div style="font-size:14px">${u.name}</div><div style="font-size:11px;color:#6b6b8a">Message karo</div></div>
+        ${avEl(u.name||u.email)} <span>${u.name||u.email}</span>
       </div>`).join('')
   }
 }
 
-async function openDM(userId){
-  const other=allUsers.find(u=>u.id===userId)
+async function openDM(uid){
+  const other=users.find(u=>u.id===uid)
+  if(!other) return
   try{
-    const ex=await pb.collection('rooms').getFullList({filter:`members ~ "${currentUser.id}" && members ~ "${other.id}" && isDM = true`})
-    const room=ex.length?ex[0]:await pb.collection('rooms').create({name:other.name,members:[currentUser.id,other.id],isDM:true})
-    currentRoom=room
-    await loadRooms()
+    let room
+    const ex=rooms.find(r=>{
+      const m=r.members||[]
+      return r.isDM && (Array.isArray(m)?m.includes(me.id)&&m.includes(uid):JSON.stringify(m).includes(me.id)&&JSON.stringify(m).includes(uid))
+    })
+    if(ex){ room=ex }
+    else{
+      room=await pb.collection('rooms').create({name:other.name||other.email, members:[me.id,uid], isDM:true})
+      await loadRooms()
+    }
+    curRoom=room
     renderSide()
-    openRoom(room.id)
-  }catch(e){ console.log(e) }
+    renderChat()
+  }catch(e){ console.log('openDM error:',e) }
 }
 
-async function openRoom(roomId){
-  currentRoom=allRooms.find(r=>r.id===roomId)||currentRoom
-  const wrap=document.getElementById('chatWrap')
-  wrap.style.opacity='1'
-  wrap.innerHTML=`
-    <div style="display:flex;flex-direction:column;height:100vh;width:100%">
-      <div class="chat-top">
-        <button onclick="backToList()" style="background:none;border:none;color:#6c47ff;font-size:20px;cursor:pointer">←</button>
-        ${av(currentRoom.name)}
-        <div><div style="font-weight:bold">${currentRoom.name}</div><div style="font-size:11px;color:#6b6b8a">🔒 Apna DB</div></div>
-      </div>
-      <div class="msgs" id="msgs"></div>
-      <div id="filePreview" style="padding:0 16px 4px;display:none"><span style="font-size:12px;color:#6c47ff" id="fileName"></span></div>
-      <div class="input-row">
-        <button class="attach" onclick="document.getElementById('fileIn').click()">📎</button>
-        <input type="file" id="fileIn" accept="image/*,video/*" style="display:none" onchange="fileChosen(this)"/>
-        <input id="msgIn" placeholder="Message..." onkeydown="if(event.key==='Enter')sendMsg()" style="flex:1;margin:0"/>
-        <button class="send" onclick="sendMsg()">Send</button>
-      </div>
+async function openRoom(rid){
+  curRoom=rooms.find(r=>r.id===rid)
+  if(!curRoom) return
+  renderSide()
+  renderChat()
+}
+
+function renderChat(){
+  const area=document.getElementById('chat-area')
+  area.innerHTML=`
+    <div class="chat-top">
+      <button class="back" onclick="backToList()">←</button>
+      ${avEl(curRoom.name,34)}
+      <div><div style="font-weight:bold;font-size:14px">${curRoom.name}</div><div style="font-size:11px;color:#6b6b8a">🔒 Apna DB</div></div>
+    </div>
+    <div class="msgs" id="msgs"></div>
+    <div class="file-prev" id="file-prev">📎 <span id="file-name"></span></div>
+    <div class="input-bar">
+      <button class="attach-btn" onclick="document.getElementById('file-in').click()">📎</button>
+      <input type="file" id="file-in" accept="image/*,video/*" style="display:none" onchange="onFile(this)"/>
+      <input id="msg-in" placeholder="Message..." onkeydown="if(event.key==='Enter')sendMsg()"/>
+      <button class="send-btn" onclick="sendMsg()">Send</button>
     </div>`
-  loadMessages()
-  pb.collection('messages').subscribe('*',e=>{ if(e.record.room===currentRoom.id) loadMessages() })
+  loadMsgs()
+  pb.collection('messages').unsubscribe('*')
+  pb.collection('messages').subscribe('*', e=>{
+    if(e.record.room===curRoom.id) loadMsgs()
+  })
 }
 
 function backToList(){
   pb.collection('messages').unsubscribe('*')
-  currentRoom=null
-  document.getElementById('chatWrap').innerHTML='<div style="font-size:64px">💬</div><div style="font-size:18px;font-weight:bold">Koi chat chuno</div>'
-  document.getElementById('chatWrap').style.opacity='0.4'
+  curRoom=null
+  document.getElementById('chat-area').innerHTML=`
+    <div class="empty">
+      <div style="font-size:48px">💬</div>
+      <div style="font-size:15px;font-weight:bold">Koi chat chuno</div>
+    </div>`
   renderSide()
 }
 
 let chosenFile=null
-function fileChosen(inp){
+function onFile(inp){
   chosenFile=inp.files[0]
-  document.getElementById('filePreview').style.display='block'
-  document.getElementById('fileName').textContent='📎 '+chosenFile.name
+  document.getElementById('file-prev').style.display='block'
+  document.getElementById('file-name').textContent=chosenFile.name
 }
 
 async function sendMsg(){
-  const text=document.getElementById('msgIn').value
-  if(!text&&!chosenFile) return
+  const txt=document.getElementById('msg-in')?.value||''
+  if(!txt&&!chosenFile) return
   try{
-    const data=new FormData()
-    data.append('text',text); data.append('sender',currentUser.id)
-    data.append('senderName',currentUser.name); data.append('room',currentRoom.id)
-    if(chosenFile) data.append('media',chosenFile)
-    await pb.collection('messages').create(data)
-    document.getElementById('msgIn').value=''
+    const fd=new FormData()
+    fd.append('text',txt); fd.append('sender',me.id)
+    fd.append('senderName',me.name||me.email); fd.append('room',curRoom.id)
+    if(chosenFile) fd.append('media',chosenFile)
+    await pb.collection('messages').create(fd)
+    if(document.getElementById('msg-in')) document.getElementById('msg-in').value=''
     chosenFile=null
-    document.getElementById('filePreview').style.display='none'
-    document.getElementById('fileIn').value=''
-  }catch(e){ console.log(e) }
+    const fp=document.getElementById('file-prev')
+    if(fp) fp.style.display='none'
+    const fi=document.getElementById('file-in')
+    if(fi) fi.value=''
+  }catch(e){ console.log('send error:',e) }
 }
 
-async function loadMessages(){
+async function loadMsgs(){
   try{
-    const msgs=await pb.collection('messages').getFullList({filter:`room = "${currentRoom.id}"`,sort:'created'})
+    const msgs=await pb.collection('messages').getFullList({filter:`room="${curRoom.id}"`,sort:'created'})
+    allMsgs=msgs
     const box=document.getElementById('msgs')
     if(!box) return
     box.innerHTML=msgs.map(m=>{
-      const mine=m.sender===currentUser.id
+      const mine=m.sender===me.id
       const murl=m.media?pb.files.getUrl(m,m.media):''
-      const isVid=murl&&(murl.includes('.mp4')||murl.includes('.mov')||murl.includes('.webm'))
+      const isVid=murl&&(murl.includes('.mp4')||murl.includes('.mov')||murl.includes('.webm')||murl.includes('.mkv'))
       return `<div class="bubble ${mine?'mine':'theirs'}">
-        ${!mine?`<div class="sender">${m.senderName||'?'}</div>`:''}
-        ${m.forwardedFrom?`<div class="fwd">↪️ from ${m.forwardedFrom}</div>`:''}
+        ${!mine?`<div class="sndr">${m.senderName||'?'}</div>`:''}
+        ${m.forwardedFrom?`<div class="fwd-tag">↪️ from ${m.forwardedFrom}</div>`:''}
         ${m.text?`<div>${m.text}</div>`:''}
         ${murl&&isVid?`<video src="${murl}" controls></video>`:''}
-        ${murl&&!isVid?`<img src="${murl}"/>`:''}
-        ${murl?`<div><button class="mbtn" onclick="dlMedia('${murl}','${m.media}')">⬇️ Download</button><button class="mbtn" onclick="showFwd('${m.id}')">↪️ Forward</button></div>`:''}
+        ${murl&&!isVid?`<img class="msg-img" src="${murl}"/>`:''}
+        ${murl?`<div class="media-btns">
+          <button class="mbtn" onclick="dlFile('${murl}','${m.media}')">⬇️ Download</button>
+          <button class="mbtn" onclick="showFwd('${m.id}')">↪️ Forward</button>
+        </div>`:''}
         <div class="time" style="text-align:${mine?'right':'left'}">${new Date(m.created).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div>
       </div>`
     }).join('')
     box.scrollTop=box.scrollHeight
-    window._msgs=msgs
-  }catch(e){ console.log(e) }
+  }catch(e){ console.log('loadMsgs error:',e) }
 }
 
-function dlMedia(url,name){
+function dlFile(url,name){
   const a=document.createElement('a'); a.href=url; a.download=name; a.click()
 }
 
-function showFwd(msgId){
-  forwardMsg=window._msgs?.find(m=>m.id===msgId)
-  if(!forwardMsg) return
-  document.getElementById('fwdList').innerHTML=allUsers.map(u=>`
-    <div class="item" onclick="doForward('${u.id}')">
-      ${av(u.name)} <span>${u.name}</span>
+function showFwd(id){
+  fwdMsg=allMsgs.find(m=>m.id===id)
+  if(!fwdMsg||!users.length){ alert('Koi aur user nahi hai!'); return }
+  document.getElementById('fwd-list').innerHTML=users.map(u=>`
+    <div class="item" onclick="doFwd('${u.id}')" style="margin-bottom:6px;background:#1a1a26;border-radius:8px">
+      ${avEl(u.name||u.email)} <span>${u.name||u.email}</span>
     </div>`).join('')
-  document.getElementById('fwdOverlay').style.display='flex'
+  document.getElementById('fwd-overlay').style.display='flex'
 }
 
-function closeFwd(){ document.getElementById('fwdOverlay').style.display='none'; forwardMsg=null }
+function closeFwd(){ document.getElementById('fwd-overlay').style.display='none'; fwdMsg=null }
 
-async function doForward(userId){
-  const other=allUsers.find(u=>u.id===userId)
+async function doFwd(uid){
+  const other=users.find(u=>u.id===uid)
   try{
-    const ex=await pb.collection('rooms').getFullList({filter:`members ~ "${currentUser.id}" && members ~ "${other.id}" && isDM = true`})
-    const room=ex.length?ex[0]:await pb.collection('rooms').create({name:other.name,members:[currentUser.id,other.id],isDM:true})
-    const data=new FormData()
-    data.append('text',forwardMsg.text||''); data.append('sender',currentUser.id)
-    data.append('senderName',currentUser.name); data.append('room',room.id)
-    data.append('forwardedFrom',forwardMsg.senderName||'Someone')
-    if(forwardMsg.media){
-      const blob=await fetch(pb.files.getUrl(forwardMsg,forwardMsg.media)).then(r=>r.blob())
-      data.append('media',blob,forwardMsg.media)
+    let room
+    const ex=rooms.find(r=>{
+      const m=r.members||[]
+      return r.isDM && (Array.isArray(m)?m.includes(me.id)&&m.includes(uid):JSON.stringify(m).includes(me.id)&&JSON.stringify(m).includes(uid))
+    })
+    if(ex){ room=ex }
+    else{ room=await pb.collection('rooms').create({name:other.name||other.email,members:[me.id,uid],isDM:true}); await loadRooms() }
+    const fd=new FormData()
+    fd.append('text',fwdMsg.text||''); fd.append('sender',me.id)
+    fd.append('senderName',me.name||me.email); fd.append('room',room.id)
+    fd.append('forwardedFrom',fwdMsg.senderName||'Someone')
+    if(fwdMsg.media){
+      const blob=await fetch(pb.files.getUrl(fwdMsg,fwdMsg.media)).then(r=>r.blob())
+      fd.append('media',blob,fwdMsg.media)
     }
-    await pb.collection('messages').create(data)
-    closeFwd(); alert('✅ Forward ho gaya!')
+    await pb.collection('messages').create(fd)
+    closeFwd()
+    alert('✅ Forward ho gaya!')
   }catch(e){ alert('Error: '+e.message) }
 }
 
-// Auto init
+// START
 window.onload=()=>{
   const url=localStorage.getItem('pb_url')
-  if(url) initPB(url)
+  if(url){ document.getElementById('url-in').value=url; initPB(url) }
 }
 </script>
 </body>
