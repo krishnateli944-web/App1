@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Muze Chat</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:sans-serif;background:#0a0a0f;color:white;height:100vh;display:flex;align-items:center;justify-content:center}
+.box{background:#12121a;border:1px solid #2a2a3d;border-radius:16px;padding:40px;width:340px}
+h1{color:#6c47ff;margin-bottom:8px;font-size:28px}
+p{color:#6b6b8a;margin-bottom:24px}
+input{width:100%;padding:12px;border-radius:8px;border:1px solid #2a2a3d;background:#1a1a26;color:white;font-size:14px;margin-bottom:12px;box-sizing:border-box}
+button{width:100%;padding:12px;background:#6c47ff;color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;font-weight:bold}
+.err{color:#ff4791;font-size:13px;margin-bottom:12px}
+.link{color:#6c47ff;cursor:pointer;background:none;border:none;font-size:14px;text-decoration:underline}
+#app{width:100%;max-width:340px}
+#chat{display:none;flex-direction:column;height:100vh;width:100%}
+.chat-top{background:#12121a;border-bottom:1px solid #2a2a3d;padding:12px 16px;display:flex;align-items:center;gap:10px}
+.msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;background:#0a0a0f}
+.bubble{max-width:75%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.5}
+.mine{align-self:flex-end;background:#1e1640;border:1px solid rgba(108,71,255,0.3)}
+.theirs{align-self:flex-start;background:#12121a;border:1px solid #2a2a3d}
+.sender{font-size:11px;color:#6c47ff;margin-bottom:4px}
+.fwd{font-size:10px;color:#6b6b8a;margin-bottom:4px}
+.time{font-size:10px;color:#6b6b8a;margin-top:4px}
+.input-row{padding:12px;border-top:1px solid #2a2a3d;background:#12121a;display:flex;gap:8px;align-items:center}
+.input-row input{margin:0}
+.send{width:auto;padding:10px 18px}
+.attach{width:auto;padding:10px 14px;background:#1a1a26;border:1px solid #2a2a3d;font-size:18px}
+.av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;flex-shrink:0}
+.sidebar{width:250px;background:#12121a;border-right:1px solid #2a2a3d;display:flex;flex-direction:column;height:100vh}
+.main-wrap{display:none;width:100vw;height:100vh;flex-direction:row}
+.tabs{display:flex;border-bottom:1px solid #2a2a3d}
+.tab{flex:1;padding:10px;background:transparent;border:none;color:#6b6b8a;cursor:pointer;font-size:13px;border-bottom:2px solid transparent}
+.tab.active{color:#6c47ff;border-bottom:2px solid #6c47ff;background:rgba(108,71,255,0.1)}
+.list{flex:1;overflow-y:auto;padding:8px}
+.item{padding:10px 12px;border-radius:10px;cursor:pointer;margin-bottom:4px;display:flex;align-items:center;gap:10px;border:1px solid transparent}
+.item:hover{background:#1a1a26}
+.item.active{background:rgba(108,71,255,0.2);border-color:rgba(108,71,255,0.3)}
+.mbtn{padding:4px 8px;background:transparent;border:1px solid #2a2a3d;border-radius:6px;color:#6b6b8a;cursor:pointer;font-size:11px;margin-top:6px;margin-right:4px}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:100}
+.fwd-box{background:#12121a;border:1px solid #2a2a3d;border-radius:16px;padding:24px;width:300px;max-height:70vh;overflow-y:auto}
+video,img{width:100%;border-radius:8px;margin-top:6px;max-height:220px;object-fit:cover}
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div id="setup" class="box">
+  <h1>🔐 Muze</h1>
+  <p>Apna PocketBase URL dalo</p>
+  <input id="pbUrl" placeholder="https://app1-production-03c2.up.railway.app"/>
+  <button onclick="connect()">Connect</button>
+</div>
+
+<!-- AUTH -->
+<div id="auth" style="display:none" class="box">
+  <h1>💬 Muze</h1>
+  <p id="authTitle">Login karo</p>
+  <input id="nameIn" placeholder="Naam" style="display:none"/>
+  <input id="emailIn" placeholder="Email"/>
+  <input id="passIn" placeholder="Password" type="password"/>
+  <div id="authErr" class="err" style="display:none"></div>
+  <button onclick="authSubmit()">Login</button>
+  <div style="text-align:center;margin-top:16px;color:#6b6b8a;font-size:14px">
+    <span id="switchText">Account nahi?</span>
+    <button class="link" onclick="switchMode()">Register</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainWrap" class="main-wrap">
+  <div class="sidebar">
+    <div style="padding:16px;border-bottom:1px solid #2a2a3d">
+      <div style="color:#6c47ff;font-size:22px;font-weight:bold">💬 Muze</div>
+      <div style="color:#6b6b8a;font-size:12px" id="myName"></div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('chats')" id="tabChats">Chats</button>
+      <button class="tab" onclick="showTab('users')" id="tabUsers">Users</button>
+    </div>
+    <div class="list" id="sideList"></div>
+    <button onclick="logout()" style="margin:12px;padding:10px;background:transparent;border:1px solid #2a2a3d;border-radius:8px;color:#6b6b8a;cursor:pointer">Logout</button>
+  </div>
+
+  <div id="chatWrap" style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;opacity:0.4">
+    <div style="font-size:64px">💬</div>
+    <div style="font-size:18px;font-weight:bold">Koi chat chuno</div>
+  </div>
+</div>
+
+<!-- FORWARD OVERLAY -->
+<div id="fwdOverlay" class="overlay" style="display:none" onclick="closeFwd()">
+  <div class="fwd-box" onclick="event.stopPropagation()">
+    <div style="font-weight:bold;font-size:16px;margin-bottom:4px">↪️ Kisko forward karein?</div>
+    <div style="font-size:12px;color:#6b6b8a;margin-bottom:16px">DB se DB directly</div>
+    <div id="fwdList"></div>
+    <button onclick="closeFwd()" style="width:100%;padding:10px;margin-top:8px;background:transparent;border:1px solid #2a2a3d;border-radius:8px;color:#6b6b8a;cursor:pointer">Cancel</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.0/dist/pocketbase.umd.js"></script>
+<script>
+let pb, currentUser, currentRoom, allUsers=[], allRooms=[], currentTab='chats', forwardMsg=null
+
+function connect(){
+  const url=document.getElementById('pbUrl').value.trim()
+  if(!url) return
+  localStorage.setItem('pb_url',url)
+  initPB(url)
+}
+
+function initPB(url){
+  pb=new PocketBase(url)
+  document.getElementById('setup').style.display='none'
+  if(pb.authStore.isValid){
+    currentUser=pb.authStore.model
+    showMain()
+  } else {
+    document.getElementById('auth').style.display='flex'
+    document.getElementById('auth').style.flexDirection='column'
+  }
+}
+
+let authMode='login'
+function switchMode(){
+  authMode=authMode==='login'?'register':'login'
+  document.getElementById('authTitle').textContent=authMode==='login'?'Login karo':'Account banao'
+  document.getElementById('nameIn').style.display=authMode==='register'?'block':'none'
+  document.getElementById('switchText').textContent=authMode==='login'?'Account nahi?':'Already hai?'
+}
+
+async function authSubmit(){
+  const email=document.getElementById('emailIn').value
+  const pass=document.getElementById('passIn').value
+  const name=document.getElementById('nameIn').value
+  const err=document.getElementById('authErr')
+  err.style.display='none'
+  try{
+    if(authMode==='register') await pb.collection('users').create({name,email,password:pass,passwordConfirm:pass})
+    const auth=await pb.collection('users').authWithPassword(email,pass)
+    currentUser=auth.record
+    document.getElementById('auth').style.display='none'
+    showMain()
+  }catch(e){ err.textContent='⚠️ '+(e.message||'Error'); err.style.display='block' }
+}
+
+function logout(){ pb.authStore.clear(); location.reload() }
+
+async function showMain(){
+  document.getElementById('mainWrap').style.display='flex'
+  document.getElementById('myName').textContent='👤 '+currentUser.name
+  await loadUsers()
+  await loadRooms()
+  renderSide()
+}
+
+async function loadUsers(){
+  try{ allUsers=(await pb.collection('users').getFullList()).filter(u=>u.id!==currentUser.id) }catch(e){}
+}
+
+async function loadRooms(){
+  try{ allRooms=await pb.collection('rooms').getFullList({filter:`members ~ "${currentUser.id}"`,sort:'-updated'}) }catch(e){}
+}
+
+const colors=['#6c47ff','#ff4791','#06b6d4','#22c55e','#f59e0b']
+function color(name){ return colors[(name||'A').charCodeAt(0)%5] }
+function av(name,size=36){ return `<div class="av" style="width:${size}px;height:${size}px;background:${color(name)}">${(name||'?')[0].toUpperCase()}</div>` }
+
+function showTab(tab){
+  currentTab=tab
+  document.getElementById('tabChats').className='tab'+(tab==='chats'?' active':'')
+  document.getElementById('tabUsers').className='tab'+(tab==='users'?' active':'')
+  renderSide()
+}
+
+function renderSide(){
+  const list=document.getElementById('sideList')
+  if(currentTab==='chats'){
+    list.innerHTML=allRooms.map(r=>`
+      <div class="item ${currentRoom?.id===r.id?'active':''}" onclick="openRoom('${r.id}')">
+        ${av(r.name)} <div><div style="font-size:14px">${r.name}</div><div style="font-size:11px;color:#6b6b8a">Tap to open</div></div>
+      </div>`).join('')
+  } else {
+    list.innerHTML=allUsers.map(u=>`
+      <div class="item" onclick="openDM('${u.id}')">
+        ${av(u.name)} <div><div style="font-size:14px">${u.name}</div><div style="font-size:11px;color:#6b6b8a">Message karo</div></div>
+      </div>`).join('')
+  }
+}
+
+async function openDM(userId){
+  const other=allUsers.find(u=>u.id===userId)
+  try{
+    const ex=await pb.collection('rooms').getFullList({filter:`members ~ "${currentUser.id}" && members ~ "${other.id}" && isDM = true`})
+    const room=ex.length?ex[0]:await pb.collection('rooms').create({name:other.name,members:[currentUser.id,other.id],isDM:true})
+    currentRoom=room
+    await loadRooms()
+    renderSide()
+    openRoom(room.id)
+  }catch(e){ console.log(e) }
+}
+
+async function openRoom(roomId){
+  currentRoom=allRooms.find(r=>r.id===roomId)||currentRoom
+  const wrap=document.getElementById('chatWrap')
+  wrap.style.opacity='1'
+  wrap.innerHTML=`
+    <div style="display:flex;flex-direction:column;height:100vh;width:100%">
+      <div class="chat-top">
+        <button onclick="backToList()" style="background:none;border:none;color:#6c47ff;font-size:20px;cursor:pointer">←</button>
+        ${av(currentRoom.name)}
+        <div><div style="font-weight:bold">${currentRoom.name}</div><div style="font-size:11px;color:#6b6b8a">🔒 Apna DB</div></div>
+      </div>
+      <div class="msgs" id="msgs"></div>
+      <div id="filePreview" style="padding:0 16px 4px;display:none"><span style="font-size:12px;color:#6c47ff" id="fileName"></span></div>
+      <div class="input-row">
+        <button class="attach" onclick="document.getElementById('fileIn').click()">📎</button>
+        <input type="file" id="fileIn" accept="image/*,video/*" style="display:none" onchange="fileChosen(this)"/>
+        <input id="msgIn" placeholder="Message..." onkeydown="if(event.key==='Enter')sendMsg()" style="flex:1;margin:0"/>
+        <button class="send" onclick="sendMsg()">Send</button>
+      </div>
+    </div>`
+  loadMessages()
+  pb.collection('messages').subscribe('*',e=>{ if(e.record.room===currentRoom.id) loadMessages() })
+}
+
+function backToList(){
+  pb.collection('messages').unsubscribe('*')
+  currentRoom=null
+  document.getElementById('chatWrap').innerHTML='<div style="font-size:64px">💬</div><div style="font-size:18px;font-weight:bold">Koi chat chuno</div>'
+  document.getElementById('chatWrap').style.opacity='0.4'
+  renderSide()
+}
+
+let chosenFile=null
+function fileChosen(inp){
+  chosenFile=inp.files[0]
+  document.getElementById('filePreview').style.display='block'
+  document.getElementById('fileName').textContent='📎 '+chosenFile.name
+}
+
+async function sendMsg(){
+  const text=document.getElementById('msgIn').value
+  if(!text&&!chosenFile) return
+  try{
+    const data=new FormData()
+    data.append('text',text); data.append('sender',currentUser.id)
+    data.append('senderName',currentUser.name); data.append('room',currentRoom.id)
+    if(chosenFile) data.append('media',chosenFile)
+    await pb.collection('messages').create(data)
+    document.getElementById('msgIn').value=''
+    chosenFile=null
+    document.getElementById('filePreview').style.display='none'
+    document.getElementById('fileIn').value=''
+  }catch(e){ console.log(e) }
+}
+
+async function loadMessages(){
+  try{
+    const msgs=await pb.collection('messages').getFullList({filter:`room = "${currentRoom.id}"`,sort:'created'})
+    const box=document.getElementById('msgs')
+    if(!box) return
+    box.innerHTML=msgs.map(m=>{
+      const mine=m.sender===currentUser.id
+      const murl=m.media?pb.files.getUrl(m,m.media):''
+      const isVid=murl&&(murl.includes('.mp4')||murl.includes('.mov')||murl.includes('.webm'))
+      return `<div class="bubble ${mine?'mine':'theirs'}">
+        ${!mine?`<div class="sender">${m.senderName||'?'}</div>`:''}
+        ${m.forwardedFrom?`<div class="fwd">↪️ from ${m.forwardedFrom}</div>`:''}
+        ${m.text?`<div>${m.text}</div>`:''}
+        ${murl&&isVid?`<video src="${murl}" controls></video>`:''}
+        ${murl&&!isVid?`<img src="${murl}"/>`:''}
+        ${murl?`<div><button class="mbtn" onclick="dlMedia('${murl}','${m.media}')">⬇️ Download</button><button class="mbtn" onclick="showFwd('${m.id}')">↪️ Forward</button></div>`:''}
+        <div class="time" style="text-align:${mine?'right':'left'}">${new Date(m.created).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div>
+      </div>`
+    }).join('')
+    box.scrollTop=box.scrollHeight
+    window._msgs=msgs
+  }catch(e){ console.log(e) }
+}
+
+function dlMedia(url,name){
+  const a=document.createElement('a'); a.href=url; a.download=name; a.click()
+}
+
+function showFwd(msgId){
+  forwardMsg=window._msgs?.find(m=>m.id===msgId)
+  if(!forwardMsg) return
+  document.getElementById('fwdList').innerHTML=allUsers.map(u=>`
+    <div class="item" onclick="doForward('${u.id}')">
+      ${av(u.name)} <span>${u.name}</span>
+    </div>`).join('')
+  document.getElementById('fwdOverlay').style.display='flex'
+}
+
+function closeFwd(){ document.getElementById('fwdOverlay').style.display='none'; forwardMsg=null }
+
+async function doForward(userId){
+  const other=allUsers.find(u=>u.id===userId)
+  try{
+    const ex=await pb.collection('rooms').getFullList({filter:`members ~ "${currentUser.id}" && members ~ "${other.id}" && isDM = true`})
+    const room=ex.length?ex[0]:await pb.collection('rooms').create({name:other.name,members:[currentUser.id,other.id],isDM:true})
+    const data=new FormData()
+    data.append('text',forwardMsg.text||''); data.append('sender',currentUser.id)
+    data.append('senderName',currentUser.name); data.append('room',room.id)
+    data.append('forwardedFrom',forwardMsg.senderName||'Someone')
+    if(forwardMsg.media){
+      const blob=await fetch(pb.files.getUrl(forwardMsg,forwardMsg.media)).then(r=>r.blob())
+      data.append('media',blob,forwardMsg.media)
+    }
+    await pb.collection('messages').create(data)
+    closeFwd(); alert('✅ Forward ho gaya!')
+  }catch(e){ alert('Error: '+e.message) }
+}
+
+// Auto init
+window.onload=()=>{
+  const url=localStorage.getItem('pb_url')
+  if(url) initPB(url)
+}
+</script>
+</body>
+</html>
