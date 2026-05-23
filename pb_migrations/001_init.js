@@ -6,7 +6,7 @@ migrate((app) => {
     const users = app.findCollectionByNameOrId("users")
     users.listRule = "@request.auth.id != ''"
     users.viewRule = "@request.auth.id != ''"
-    app.saveCollection(users)
+    app.save(users)
   } catch(e) {}
 
   // ── ROOMS ──
@@ -22,14 +22,14 @@ migrate((app) => {
       updateRule: "@request.auth.id != ''",
       deleteRule: "@request.auth.id != ''",
       fields: [
-        { name:"name",         type:"text", required:true  },
-        { name:"members",      type:"json", required:false },
-        { name:"isDM",         type:"bool", required:false },
+        { name:"name",    type:"text", required:true  },
+        { name:"members", type:"json", required:false },
+        { name:"isDM",    type:"bool", required:false },
         { name:"friendDb",     type:"text", required:false },
         { name:"friendRoomId", type:"text", required:false }
       ]
     })
-    app.saveCollection(rooms)
+    app.save(rooms)
   }
 
   // ── MESSAGES ──
@@ -53,17 +53,17 @@ migrate((app) => {
         {
           name:"media", type:"file", required:false,
           options:{
-            maxSelect:1,
-            maxSize:10485760,
+            maxSelect:1, maxSize:10485760,
             mimeTypes:["image/jpeg","image/png","image/gif","image/webp","video/mp4","video/quicktime","video/webm"]
           }
         }
       ]
     })
-    app.saveCollection(messages)
+    app.save(messages)
   }
 
 }, (app) => {
-  try { app.deleteCollection(app.findCollectionByNameOrId("messages")) } catch(e) {}
-  try { app.deleteCollection(app.findCollectionByNameOrId("rooms")) } catch(e) {}
+  // DOWN — rollback
+  try { app.delete(app.findCollectionByNameOrId("messages")) } catch(e) {}
+  try { app.delete(app.findCollectionByNameOrId("rooms")) } catch(e) {}
 })
