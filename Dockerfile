@@ -5,5 +5,6 @@ RUN wget -q https://github.com/pocketbase/pocketbase/releases/download/v0.22.4/p
     && chmod +x pocketbase \
     && rm pocketbase_0.22.4_linux_amd64.zip
 COPY pb_public /pb_public
+COPY pb_migrations /pb_migrations
 EXPOSE 8090
 CMD ["./pocketbase", "serve", "--http=0.0.0.0:8090", "--dir=/pb_data", "--publicDir=/pb_public"]
